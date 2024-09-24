@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form</title>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            background-color: #fff;
+            padding: 32px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2, h3 {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        input, button, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+        }
+        button {
+            background-color: #10b981;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background-color: #059669;
+        }
+        table {
+            width: 100%;
+            margin-top: 24px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            text-align: center;
+        }
+        th {
+            background-color: #f3f4f6;
+        }
+        .terms {
+            display: flex;
+            align-items: center;
+            margin-top: 16px;
+        }
+        .terms input {
+            width: auto;
+            margin-right: 8px;
+        }
+        .error {
+            color: red;
+            font-size: 0.875em;
+        }
+        #dob:disabled {
+            background-color: #e5e7eb;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <form class="registration-form flex-box" id="registrationForm">
+            <h2>Registration Form</h2>           
+           
+            <div>
+                <label for="name">Name</label>
+                <input type="text" id="name" placeholder="Enter full name" required>
+                <div class="error" id="nameError"></div>
+            </div>
+            
+            <div>
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Enter email" required>
+                <div class="error" id="emailError"></div>
+            </div>
+
+            <div>
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter password" required>
+                <div class="error" id="passwordError"></div>
+            </div>
+
+
+            <div>
+                <label for="dob">Date of Birth</label>
+                <input type="date" id="dob" required>
+                <div class="error" id="dobError"></div>
+            </div>
+
+
+            <div class="terms">
+                <input id="terms" type="checkbox" required>
+                <label for="terms">Accept Terms & Conditions</label>
+                <div class="error" id="termsError"></div>
+            </div>
+
+ 
+            <div>
+                <button type="submit">Submit</button>
+            </div>
+        </form>
+
+        <div class="entries-table">
+            <h3>Entries</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Password</th>
+                        <th>DOB</th>
+                        <th>Accepted Terms?</th>
+                    </tr>
+                </thead>
+                <tbody id="entriesBody">
+                 
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('registrationForm');
+        const entriesBody = document.getElementById('entriesBody');
+        const dobField = document.getElementById('dob');
+        const today = new Date();
+
+
+        const maxAge = 18;
+        const minAge = 55;
+
+
+        const minDate = new Date(today.getFullYear() - maxAge, today.getMonth(), today.getDate()).toISOString().split('T')[0];
+        const maxDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate()).toISOString().split('T')[0];
+
+        dobField.setAttribute('min', maxDate);
+        dobField.setAttribute('max', minDate);
+
+ 
+        dobField.addEventListener('change', function() {
+            if (!validateDOB(dobField.value)) {
+                dobField.disabled = true;
+                dobField.value = '';
+                dobField.style.backgroundColor = '#e5e7eb';
+            } else {
+                dobField.disabled = false;
+                dobField.style.backgroundColor = '';
+            }
+        });
+
+        window.onload = function() {
+            const savedData = JSON.parse(localStorage.getItem('formData'));
+            if (savedData) {
+                savedData.forEach(data => addEntryToTable(data));
+            }
+        };
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+ 
+            clearErrors();
+
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const dob = document.getElementById('dob').value;
+            const termsAccepted = document.getElementById('terms').checked;
+
+
+            if (!validateEmail(email)) {
+                showError('emailError', 'Please enter a valid email.');
+                return;
+            }
+
+            if (!validateDOB(dob)) {
+                showError('dobError', 'You must be between 18 and 55 years old.');
+                return;
+            }
+
+            if (!termsAccepted) {
+                showError('termsError', 'You must accept the terms and conditions.');
+                return;
+            }
+
+     
+            const formData = {
+                name,
+                email,
+                password,
+                dob,
+                termsAccepted: termsAccepted ? 'Yes' : 'No'
+            };
+            saveDataToLocal(formData);
+
+            addEntryToTable(formData);
+
+            form.reset();
+        });
+
+    
+        function saveDataToLocal(data) {
+            let savedData = JSON.parse(localStorage.getItem('formData')) || [];
+            savedData.push(data);
+            localStorage.setItem('formData', JSON.stringify(savedData));
+        }
+
+        function addEntryToTable(data) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${data.name}</td>
+                <td>${data.email}</td>
+                <td>${data.password}</td>
+                <td>${data.dob}</td>
+                <td>${data.termsAccepted}</td>
+            `;
+            entriesBody.appendChild(row);
+        }
+
+ 
+        function validateEmail(email) {
+            const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+            return emailPattern.test(email);
+        }
+
+        
+        function validateDOB(dob) {
+            const today = new Date();
+            const birthDate = new Date(dob);
+            const age = today.getFullYear() - birthDate.getFullYear();
+            const monthDifference = today.getMonth() - birthDate.getMonth();
+            const dayDifference = today.getDate() - birthDate.getDate();
+            if (monthDifference < 0 || (monthDifference === 0 && dayDifference < 0)) {
+                age--;
+            }
+            return age >= 18 && age <= 55;
+        }
+
+        function showError(id, message) {
+            const errorElement = document.getElementById(id);
+            errorElement.textContent = message;
+        }
+
+
+        function clearErrors() {
+            document.querySelectorAll('.error').forEach(errorElement => {
+                errorElement.textContent = '';
+            });
+        }
+    </script>
+
+</body>
+</html>
