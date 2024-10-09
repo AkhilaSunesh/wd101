@@ -3,6 +3,7 @@ const entriesBody = document.getElementById('entriesBody');
 const dobField = document.getElementById('dob');
 const today = new Date();
 
+
 const minAge = 18;
 const maxAge = 55;
 
@@ -32,19 +33,19 @@ form.addEventListener('submit', function(event) {
     const dob = document.getElementById('dob').value;
     const termsAccepted = document.getElementById('terms').checked;
 
-  
+   
     if (!validateEmail(email)) {
         showError('emailError', 'Please enter a valid email.');
         return;
     }
 
-    
+
     if (!validateDOB(dob)) {
         showError('dobError', `You must be between ${minAge} and ${maxAge} years old.`);
         return;
     }
 
-  
+    
     if (!termsAccepted) {
         showError('termsError', 'You must accept the terms and conditions.');
         return;
@@ -56,16 +57,16 @@ form.addEventListener('submit', function(event) {
         email,
         password,
         dob,
-        termsAccepted: termsAccepted ? 'Yes' : 'No'
+        termsAccepted
     };
 
-   
+    
     saveDataToLocal(formData);
 
-    
+  
     addEntryToTable(formData);
 
-  
+    
     form.reset();
 });
 
@@ -74,7 +75,6 @@ function saveDataToLocal(data) {
     savedData.push(data);
     localStorage.setItem('formData', JSON.stringify(savedData));
 }
-
 
 function addEntryToTable(data) {
     const row = document.createElement('tr');
@@ -102,6 +102,7 @@ function validateDOB(dob) {
     const monthDifference = today.getMonth() - birthDate.getMonth();
     const dayDifference = today.getDate() - birthDate.getDate();
 
+    
     if (monthDifference < 0 || (monthDifference === 0 && dayDifference < 0)) {
         age--;
     }
@@ -114,7 +115,6 @@ function showError(id, message) {
     const errorElement = document.getElementById(id);
     errorElement.textContent = message;
 }
-
 
 function clearErrors() {
     document.querySelectorAll('.error').forEach(errorElement => {
