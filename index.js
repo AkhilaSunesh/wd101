@@ -14,6 +14,7 @@ const maxDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.g
 dobField.setAttribute('min', minDate);
 dobField.setAttribute('max', maxDate);
 
+
 window.onload = function() {
     const savedData = JSON.parse(localStorage.getItem('formData')) || [];
     savedData.forEach(data => addEntryToTable(data));
@@ -31,25 +32,25 @@ form.addEventListener('submit', function(event) {
     const dob = document.getElementById('dob').value;
     const termsAccepted = document.getElementById('terms').checked;
 
-    // Validate email
+  
     if (!validateEmail(email)) {
         showError('emailError', 'Please enter a valid email.');
         return;
     }
 
-    // Validate DOB
+    
     if (!validateDOB(dob)) {
         showError('dobError', `You must be between ${minAge} and ${maxAge} years old.`);
         return;
     }
 
-    // Validate terms acceptance
+  
     if (!termsAccepted) {
         showError('termsError', 'You must accept the terms and conditions.');
         return;
     }
 
-    // Create formData object
+    
     const formData = {
         name,
         email,
@@ -58,24 +59,23 @@ form.addEventListener('submit', function(event) {
         termsAccepted: termsAccepted ? 'Yes' : 'No'
     };
 
-    // Save data to localStorage
+   
     saveDataToLocal(formData);
 
-    // Add new entry to the table
+    
     addEntryToTable(formData);
 
-    // Reset the form
+  
     form.reset();
 });
 
-// Save form data to localStorage
 function saveDataToLocal(data) {
     let savedData = JSON.parse(localStorage.getItem('formData')) || [];
     savedData.push(data);
     localStorage.setItem('formData', JSON.stringify(savedData));
 }
 
-// Add entry to the table
+
 function addEntryToTable(data) {
     const row = document.createElement('tr');
     row.innerHTML = `
@@ -88,13 +88,13 @@ function addEntryToTable(data) {
     entriesBody.appendChild(row);
 }
 
-// Email validation
+
 function validateEmail(email) {
     const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
     return emailPattern.test(email);
 }
 
-// Date of Birth 
+
 function validateDOB(dob) {
     const today = new Date();
     const birthDate = new Date(dob);
@@ -102,13 +102,13 @@ function validateDOB(dob) {
     const monthDifference = today.getMonth() - birthDate.getMonth();
     const dayDifference = today.getDate() - birthDate.getDate();
 
-    // Adjust the age if the birth date hasn't occurred yet this year
     if (monthDifference < 0 || (monthDifference === 0 && dayDifference < 0)) {
         age--;
     }
 
     return age >= minAge && age <= maxAge;
 }
+
 
 function showError(id, message) {
     const errorElement = document.getElementById(id);
